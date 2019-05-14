@@ -15,17 +15,22 @@ all:
 	make prerequisites
 	make git
 
-
 update:
+	@echo "→ Update package lists"
 	sudo apt update
+	@echo "✔ Done"
 
 upgrade:
+	@echo "→ Fetch new versions of packages"
 	sudo apt -y upgrade
+	@echo "✔ Done"
 
 prerequisites:
 	sudo apt install wget curl git
 
 	zip unzip screen curl ffmpeg libfile-fcntllock-perl tree
+
+
 
 git:
 	sudo add-apt-repository -y ppa:git-core/ppa
@@ -99,6 +104,81 @@ fonts:
 	wget https://github.com/tonsky/FiraCode/raw/master/distr/otf/FiraCode-Regular.otf -O ~/.fonts/FiraCode-Regular.otf
 	wget https://github.com/tonsky/FiraCode/raw/master/distr/otf/FiraCode-Retina.otf -O ~/.fonts/FiraCode-Retina.otf
 	fc-cache -v
+
+docker-prerequisites:
+	## TESTED
+	sudo apt install \
+		apt-transport-https \
+		ca-certificates \
+		curl \
+		gnupg-agent \
+		software-properties-common
+
+docker:
+	## TESTED
+	sudo apt remove docker docker-engine docker.io containerd runc
+	make update
+	make docker-prerequisites
+	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+	## sudo apt-key fingerprint 0EBFCD88
+	##
+	## pub   rsa4096 2017-02-22 [SCEA]
+    ##       9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88
+    ## uid           [ unknown] Docker Release (CE deb) <docker@docker.com>
+    ## sub   rsa4096 2017-02-22 [S]
+	## sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+
+	echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu `lsb_release -cs` stable" \
+            | sudo tee /etc/apt/sources.list.d/docker.list
+
+    make update
+    sudo apt install -y docker-ce docker-ce-cli containerd.io
+
+	## apt-cache madison docker-ce
+	##
+	## docker-ce | 5:18.09.6~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 5:18.09.5~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 5:18.09.4~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 5:18.09.3~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 5:18.09.2~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 5:18.09.1~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 5:18.09.0~3-0~ubuntu-bionic | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 18.06.3~ce~3-0~ubuntu | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 18.06.2~ce~3-0~ubuntu | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 18.06.1~ce~3-0~ubuntu | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 18.06.0~ce~3-0~ubuntu | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+	## docker-ce | 18.03.1~ce~3-0~ubuntu | https://download.docker.com/linux/ubuntu bionic/stable amd64 Packages
+
+	# sudo docker run hello-world
+
+	# docker --version
+
+	sudo groupadd docker
+	sudo usermod -aG docker $USER
+	## REBOOT
+
+docker-compose:
+	## TESTED
+	make update
+	sudo curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+	sudo chmod +x /usr/local/bin/docker-compose
+	sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+	# docker-compose --version
+
+	## UNINSTALL
+	## sudo rm /usr/local/bin/docker-compose
+
+ansible:
+	# Not Tested
+	sudo add-apt-repository -y ppa:ansible/ansible
+	make update
+	sudo apt -y install ansible
+	# ansible --version
+
+	ssh-keygen -t rsa -b 4096 -C "papahelmsman@gmail.com"
+
 
 
 
